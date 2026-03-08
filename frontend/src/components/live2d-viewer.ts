@@ -387,6 +387,9 @@ export class Live2DViewer extends LitElement {
 
       // Drag support via canvas DOM events (bypass pixi event system)
       this._setupDrag(canvas);
+
+      // Restart mouse tracking (was stopped by _destroyApp during init)
+      this._syncFollowMouse();
     } catch (e) {
       this._error = `Live2D model load error: ${e}`;
       console.error(this._error);
@@ -588,7 +591,11 @@ export class Live2DViewer extends LitElement {
       // Normalize to roughly [-1, 1] using half-window as reference range
       const nx = Math.max(-1, Math.min(1, pos.x / Math.max(pos.hw, 100)));
       const ny = Math.max(-1, Math.min(1, pos.y / Math.max(pos.hh, 100)));
-      this._model.focus(nx, ny);
+      // model.focus() expects world-space pixel coordinates, not normalized values.
+      // Convert [-1, 1] to pixi world coords relative to the model's position.
+      const worldX = this._model.x + nx * (this._model.width / 2);
+      const worldY = this._model.y + ny * (this._model.height / 2);
+      this._model.focus(worldX, worldY);
     }, 50);
   }
 
