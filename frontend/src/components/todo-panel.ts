@@ -254,7 +254,7 @@ export class TodoPanel extends LitElement {
         align-items: center;
         flex-shrink: 0;
       }
-      .quick-add input {
+      .quick-add input[type="text"] {
         flex: 1;
         font-family: var(--md-sys-typescale-body-font);
         font-size: 14px;
@@ -266,7 +266,21 @@ export class TodoPanel extends LitElement {
         outline: none;
         transition: border-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
       }
-      .quick-add input:focus {
+      .quick-add input[type="text"]:focus {
+        border-color: var(--md-sys-color-primary);
+      }
+      .quick-add input[type="datetime-local"] {
+        font-family: var(--md-sys-typescale-body-font);
+        font-size: 12px;
+        padding: 6px 8px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-sys-shape-corner-small);
+        background: var(--md-sys-color-surface-container-low);
+        color: var(--md-sys-color-on-surface);
+        outline: none;
+        max-width: 180px;
+      }
+      .quick-add input[type="datetime-local"]:focus {
         border-color: var(--md-sys-color-primary);
       }
       .quick-add select {
@@ -305,6 +319,7 @@ export class TodoPanel extends LitElement {
   @state() private _loading = false;
   @state() private _newTitle = '';
   @state() private _newPriority: EventPriority = 'normal';
+  @state() private _newDueDate = '';
 
   override connectedCallback() {
     super.connectedCallback();
@@ -358,10 +373,14 @@ export class TodoPanel extends LitElement {
       title: this._newTitle.trim(),
       priority: this._newPriority,
     };
+    if (this._newDueDate) {
+      params.due_date = new Date(this._newDueDate).toISOString();
+    }
     try {
       const created = await createTodo(params);
       this._todos = [created, ...this._todos];
       this._newTitle = '';
+      this._newDueDate = '';
       this._stats = await getTodoStats();
     } catch (e) {
       console.error('Failed to create todo:', e);
@@ -377,6 +396,18 @@ export class TodoPanel extends LitElement {
   private _isOverdue(todo: TodoItem): boolean {
     if (!todo.due_date || todo.status === 'done' || todo.status === 'cancelled') return false;
     return new Date(todo.due_date) < new Date();
+  }
+
+  private _formatDueDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr.slice(0, 10);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    // If time is 00:00, show date only
+    if (hh === '00' && mi === '00') return `${mm}-${dd}`;
+    return `${mm}-${dd} ${hh}:${mi}`;
   }
 
   override render() {
@@ -404,10 +435,14 @@ export class TodoPanel extends LitElement {
       </div>
 
       <div class="quick-add">
-        <input placeholder="添加新待办..."
+        <input type="text" placeholder="添加新待办..."
           .value=${this._newTitle}
           @input=${(e: Event) => (this._newTitle = (e.target as HTMLInputElement).value)}
           @keydown=${this._handleKeydown} />
+        <input type="datetime-local"
+          .value=${this._newDueDate}
+          @input=${(e: Event) => (this._newDueDate = (e.target as HTMLInputElement).value)}
+          title="截止时间" />
         <select .value=${this._newPriority}
           @change=${(e: Event) => (this._newPriority = (e.target as HTMLSelectElement).value as EventPriority)}>
           <option value="low">低</option>
@@ -440,7 +475,7 @@ export class TodoPanel extends LitElement {
                 <div class="todo-title">${todo.title}</div>
                 <div class="todo-meta">
                   ${todo.due_date
-                    ? html`<span class="${this._isOverdue(todo) ? 'overdue' : ''}">${todo.due_date.slice(0, 10)}</span>`
+                    ? html`<span class="${this._isOverdue(todo) ? 'overdue' : ''}">${this._formatDueDate(todo.due_date)}</span>`
                     : nothing}
                   ${todo.tags?.length
                     ? html`<span>${todo.tags.join(', ')}</span>`
