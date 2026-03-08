@@ -269,20 +269,6 @@ export class TodoPanel extends LitElement {
       .quick-add input[type="text"]:focus {
         border-color: var(--md-sys-color-primary);
       }
-      .quick-add input[type="datetime-local"] {
-        font-family: var(--md-sys-typescale-body-font);
-        font-size: 12px;
-        padding: 6px 8px;
-        border: 1px solid var(--md-sys-color-outline-variant);
-        border-radius: var(--md-sys-shape-corner-small);
-        background: var(--md-sys-color-surface-container-low);
-        color: var(--md-sys-color-on-surface);
-        outline: none;
-        max-width: 180px;
-      }
-      .quick-add input[type="datetime-local"]:focus {
-        border-color: var(--md-sys-color-primary);
-      }
       .quick-add select {
         font-family: var(--md-sys-typescale-body-font);
         font-size: 13px;
@@ -310,6 +296,231 @@ export class TodoPanel extends LitElement {
       .add-btn:hover {
         box-shadow: var(--md-sys-elevation-1);
       }
+
+      /* M3 Date/Time Picker */
+      .date-trigger {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-sys-shape-corner-full);
+        background: var(--md-sys-color-surface-container-low);
+        color: var(--md-sys-color-on-surface-variant);
+        font-family: var(--md-sys-typescale-body-font);
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+        flex-shrink: 0;
+        height: 36px;
+      }
+      .date-trigger:hover {
+        background: var(--md-sys-color-surface-container);
+        border-color: var(--md-sys-color-outline);
+      }
+      .date-trigger.has-value {
+        border-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-primary);
+      }
+      .date-trigger .material-symbols-outlined {
+        font-size: 18px;
+      }
+      .date-clear {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border: none;
+        border-radius: 50%;
+        background: var(--md-sys-color-surface-container-highest);
+        color: var(--md-sys-color-on-surface-variant);
+        cursor: pointer;
+        padding: 0;
+        font-size: 0;
+        line-height: 1;
+      }
+      .date-clear .material-symbols-outlined {
+        font-size: 12px;
+      }
+
+      /* Picker popover */
+      .picker-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 99;
+      }
+      .picker-popover {
+        position: absolute;
+        z-index: 100;
+        background: var(--md-sys-color-surface-container-high);
+        border-radius: var(--md-sys-shape-corner-extra-large);
+        box-shadow: var(--md-sys-elevation-3);
+        padding: 16px;
+        min-width: 300px;
+        animation: pickerIn var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized-decelerate);
+      }
+      @keyframes pickerIn {
+        from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      .picker-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .picker-header .title-small {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+      }
+      .picker-nav {
+        display: flex;
+        gap: 2px;
+      }
+      .picker-nav button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: var(--md-sys-shape-corner-full);
+        background: transparent;
+        color: var(--md-sys-color-on-surface-variant);
+        cursor: pointer;
+        transition: background var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+      }
+      .picker-nav button:hover {
+        background: var(--md-sys-color-surface-container-highest);
+      }
+      .picker-nav button .material-symbols-outlined {
+        font-size: 20px;
+      }
+
+      .picker-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        margin-bottom: 4px;
+      }
+      .picker-weekdays span {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface-variant);
+        padding: 4px 0;
+      }
+
+      .picker-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+      }
+      .picker-day {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: var(--md-sys-shape-corner-full);
+        background: transparent;
+        color: var(--md-sys-color-on-surface);
+        font-family: var(--md-sys-typescale-body-font);
+        font-size: 13px;
+        cursor: pointer;
+        margin: 0 auto;
+        transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+      }
+      .picker-day:hover {
+        background: var(--md-sys-color-surface-container-highest);
+      }
+      .picker-day.other-month {
+        color: var(--md-sys-color-outline);
+        opacity: 0.5;
+      }
+      .picker-day.today {
+        border: 1px solid var(--md-sys-color-primary);
+        font-weight: 600;
+      }
+      .picker-day.selected {
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        font-weight: 600;
+      }
+      .picker-day.selected:hover {
+        background: var(--md-sys-color-primary);
+      }
+
+      .picker-time {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--md-sys-color-outline-variant);
+      }
+      .picker-time .material-symbols-outlined {
+        font-size: 18px;
+        color: var(--md-sys-color-on-surface-variant);
+      }
+      .time-input {
+        width: 44px;
+        text-align: center;
+        font-family: var(--md-sys-typescale-body-font);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 6px 4px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: var(--md-sys-shape-corner-small);
+        background: var(--md-sys-color-surface-container);
+        color: var(--md-sys-color-on-surface);
+        outline: none;
+        transition: border-color var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+      }
+      .time-input:focus {
+        border-color: var(--md-sys-color-primary);
+      }
+      .time-sep {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--md-sys-color-on-surface);
+      }
+      .picker-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .picker-btn {
+        padding: 6px 16px;
+        border: none;
+        border-radius: var(--md-sys-shape-corner-full);
+        font-family: var(--md-sys-typescale-label-font);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+      }
+      .picker-btn.text {
+        background: transparent;
+        color: var(--md-sys-color-primary);
+      }
+      .picker-btn.text:hover {
+        background: var(--md-sys-color-primary-container);
+      }
+      .picker-btn.filled {
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+      }
+      .picker-btn.filled:hover {
+        box-shadow: var(--md-sys-elevation-1);
+      }
     `,
   ];
 
@@ -320,6 +531,12 @@ export class TodoPanel extends LitElement {
   @state() private _newTitle = '';
   @state() private _newPriority: EventPriority = 'normal';
   @state() private _newDueDate = '';
+  @state() private _pickerOpen = false;
+  @state() private _pickerYear = new Date().getFullYear();
+  @state() private _pickerMonth = new Date().getMonth();
+  @state() private _pickerDay: number | null = null;
+  @state() private _pickerHour = '';
+  @state() private _pickerMinute = '';
 
   override connectedCallback() {
     super.connectedCallback();
@@ -405,9 +622,175 @@ export class TodoPanel extends LitElement {
     const dd = String(d.getDate()).padStart(2, '0');
     const hh = String(d.getHours()).padStart(2, '0');
     const mi = String(d.getMinutes()).padStart(2, '0');
-    // If time is 00:00, show date only
     if (hh === '00' && mi === '00') return `${mm}-${dd}`;
     return `${mm}-${dd} ${hh}:${mi}`;
+  }
+
+  /* ---- M3 Date/Time Picker ---- */
+
+  private _openPicker() {
+    if (this._newDueDate) {
+      const d = new Date(this._newDueDate);
+      this._pickerYear = d.getFullYear();
+      this._pickerMonth = d.getMonth();
+      this._pickerDay = d.getDate();
+      this._pickerHour = String(d.getHours()).padStart(2, '0');
+      this._pickerMinute = String(d.getMinutes()).padStart(2, '0');
+    } else {
+      const now = new Date();
+      this._pickerYear = now.getFullYear();
+      this._pickerMonth = now.getMonth();
+      this._pickerDay = null;
+      this._pickerHour = '';
+      this._pickerMinute = '';
+    }
+    this._pickerOpen = true;
+  }
+
+  private _closePicker() {
+    this._pickerOpen = false;
+  }
+
+  private _pickerPrevMonth() {
+    if (this._pickerMonth === 0) {
+      this._pickerMonth = 11;
+      this._pickerYear--;
+    } else {
+      this._pickerMonth--;
+    }
+  }
+
+  private _pickerNextMonth() {
+    if (this._pickerMonth === 11) {
+      this._pickerMonth = 0;
+      this._pickerYear++;
+    } else {
+      this._pickerMonth++;
+    }
+  }
+
+  private _pickerSelectDay(day: number, isOtherMonth = false) {
+    if (isOtherMonth) return;
+    this._pickerDay = day;
+  }
+
+  private _pickerConfirm() {
+    if (this._pickerDay === null) {
+      this._closePicker();
+      return;
+    }
+    const h = parseInt(this._pickerHour) || 0;
+    const m = parseInt(this._pickerMinute) || 0;
+    const d = new Date(this._pickerYear, this._pickerMonth, this._pickerDay, h, m);
+    // Format as local datetime string for storage
+    const pad = (n: number) => String(n).padStart(2, '0');
+    this._newDueDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    this._closePicker();
+  }
+
+  private _pickerClear() {
+    this._newDueDate = '';
+    this._closePicker();
+  }
+
+  private _getCalendarDays(): Array<{ day: number; thisMonth: boolean; isToday: boolean }> {
+    const year = this._pickerYear;
+    const month = this._pickerMonth;
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrev = new Date(year, month, 0).getDate();
+    const today = new Date();
+    const todayY = today.getFullYear();
+    const todayM = today.getMonth();
+    const todayD = today.getDate();
+
+    const result: Array<{ day: number; thisMonth: boolean; isToday: boolean }> = [];
+    // Monday-based: convert Sunday(0)->6, Mon(1)->0, ...
+    const startOffset = (firstDay + 6) % 7;
+
+    for (let i = startOffset - 1; i >= 0; i--) {
+      result.push({ day: daysInPrev - i, thisMonth: false, isToday: false });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      result.push({ day: d, thisMonth: true, isToday: d === todayD && month === todayM && year === todayY });
+    }
+    const remaining = 7 - (result.length % 7);
+    if (remaining < 7) {
+      for (let d = 1; d <= remaining; d++) {
+        result.push({ day: d, thisMonth: false, isToday: false });
+      }
+    }
+    return result;
+  }
+
+  private _dueDateDisplay(): string {
+    if (!this._newDueDate) return '';
+    return this._formatDueDate(this._newDueDate);
+  }
+
+  private _renderPicker() {
+    if (!this._pickerOpen) return nothing;
+    const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+    const days = this._getCalendarDays();
+    return html`
+      <div class="picker-overlay" @click=${this._closePicker}></div>
+      <div class="picker-popover" style="top: 100%; right: 0; margin-top: 4px;"
+           @click=${(e: Event) => e.stopPropagation()}>
+        <div class="picker-header">
+          <span class="title-small">${this._pickerYear}年 ${monthNames[this._pickerMonth]}</span>
+          <div class="picker-nav">
+            <button @click=${this._pickerPrevMonth}>
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button @click=${this._pickerNextMonth}>
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="picker-weekdays">
+          ${['一', '二', '三', '四', '五', '六', '日'].map(d => html`<span>${d}</span>`)}
+        </div>
+
+        <div class="picker-days">
+          ${days.map(d => {
+            const selected = d.thisMonth && d.day === this._pickerDay;
+            return html`
+              <button class="picker-day
+                ${d.thisMonth ? '' : 'other-month'}
+                ${d.isToday ? 'today' : ''}
+                ${selected ? 'selected' : ''}"
+                @click=${() => this._pickerSelectDay(d.day, !d.thisMonth)}>
+                ${d.day}
+              </button>`;
+          })}
+        </div>
+
+        <div class="picker-time">
+          <span class="material-symbols-outlined">schedule</span>
+          <input class="time-input" type="text" maxlength="2" placeholder="时"
+            .value=${this._pickerHour}
+            @input=${(e: Event) => {
+              let v = (e.target as HTMLInputElement).value.replace(/\D/g, '');
+              if (parseInt(v) > 23) v = '23';
+              this._pickerHour = v;
+            }} />
+          <span class="time-sep">:</span>
+          <input class="time-input" type="text" maxlength="2" placeholder="分"
+            .value=${this._pickerMinute}
+            @input=${(e: Event) => {
+              let v = (e.target as HTMLInputElement).value.replace(/\D/g, '');
+              if (parseInt(v) > 59) v = '59';
+              this._pickerMinute = v;
+            }} />
+        </div>
+
+        <div class="picker-actions">
+          <button class="picker-btn text" @click=${this._pickerClear}>清除</button>
+          <button class="picker-btn filled" @click=${this._pickerConfirm}>确定</button>
+        </div>
+      </div>
+    `;
   }
 
   override render() {
@@ -439,10 +822,19 @@ export class TodoPanel extends LitElement {
           .value=${this._newTitle}
           @input=${(e: Event) => (this._newTitle = (e.target as HTMLInputElement).value)}
           @keydown=${this._handleKeydown} />
-        <input type="datetime-local"
-          .value=${this._newDueDate}
-          @input=${(e: Event) => (this._newDueDate = (e.target as HTMLInputElement).value)}
-          title="截止时间" />
+        <div style="position:relative;">
+          <button class="date-trigger ${this._newDueDate ? 'has-value' : ''}"
+            @click=${() => this._openPicker()}>
+            <span class="material-symbols-outlined">event</span>
+            ${this._newDueDate
+              ? html`${this._dueDateDisplay()}
+                <span class="date-clear" @click=${(e: Event) => { e.stopPropagation(); this._newDueDate = ''; }}>
+                  <span class="material-symbols-outlined">close</span>
+                </span>`
+              : html`截止时间`}
+          </button>
+          ${this._renderPicker()}
+        </div>
         <select .value=${this._newPriority}
           @change=${(e: Event) => (this._newPriority = (e.target as HTMLSelectElement).value as EventPriority)}>
           <option value="low">低</option>
