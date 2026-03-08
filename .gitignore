@@ -33,6 +33,9 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# ── Live2D 模型资源（版权素材，禁止上传） ──
+**/assets/live2d/
+
 # ── OS ──────────────────────────────────────
 desktop.ini
 ehthumbs.db
