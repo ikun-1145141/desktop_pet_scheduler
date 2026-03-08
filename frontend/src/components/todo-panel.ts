@@ -353,7 +353,7 @@ export class TodoPanel extends LitElement {
         z-index: 99;
       }
       .picker-popover {
-        position: absolute;
+        position: fixed;
         z-index: 100;
         background: var(--md-sys-color-surface-container-high);
         border-radius: var(--md-sys-shape-corner-extra-large);
@@ -456,18 +456,27 @@ export class TodoPanel extends LitElement {
         background: var(--md-sys-color-primary);
       }
 
-      .picker-time {
+      .picker-body {
         display: flex;
+        gap: 12px;
+      }
+      .picker-calendar {
+        flex: 1;
+        min-width: 0;
+      }
+      .picker-time-side {
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid var(--md-sys-color-outline-variant);
+        gap: 4px;
+        padding-left: 12px;
+        border-left: 1px solid var(--md-sys-color-outline-variant);
       }
-      .picker-time .material-symbols-outlined {
+      .picker-time-side .material-symbols-outlined {
         font-size: 18px;
         color: var(--md-sys-color-on-surface-variant);
+        margin-bottom: 4px;
       }
       .time-input {
         width: 44px;
@@ -537,6 +546,7 @@ export class TodoPanel extends LitElement {
   @state() private _pickerDay: number | null = null;
   @state() private _pickerHour = '';
   @state() private _pickerMinute = '';
+  @state() private _pickerPos = { top: 0, left: 0 };
 
   override connectedCallback() {
     super.connectedCallback();
@@ -629,6 +639,14 @@ export class TodoPanel extends LitElement {
   /* ---- M3 Date/Time Picker ---- */
 
   private _openPicker() {
+    // Always open downward, right-aligned to trigger
+    const trigger = this.shadowRoot?.querySelector('.date-trigger') as HTMLElement | null;
+    if (trigger) {
+      const rect = trigger.getBoundingClientRect();
+      let left = rect.right - 320;
+      if (left < 8) left = 8;
+      this._pickerPos = { top: rect.bottom + 4, left };
+    }
     if (this._newDueDate) {
       const d = new Date(this._newDueDate);
       this._pickerYear = d.getFullYear();
@@ -734,7 +752,8 @@ export class TodoPanel extends LitElement {
     const days = this._getCalendarDays();
     return html`
       <div class="picker-overlay" @click=${this._closePicker}></div>
-      <div class="picker-popover" style="top: 100%; right: 0; margin-top: 4px;"
+      <div class="picker-popover"
+           style="top:${this._pickerPos.top}px; left:${this._pickerPos.left}px;"
            @click=${(e: Event) => e.stopPropagation()}>
         <div class="picker-header">
           <span class="title-small">${this._pickerYear}年 ${monthNames[this._pickerMonth]}</span>
@@ -748,41 +767,43 @@ export class TodoPanel extends LitElement {
           </div>
         </div>
 
-        <div class="picker-weekdays">
-          ${['一', '二', '三', '四', '五', '六', '日'].map(d => html`<span>${d}</span>`)}
-        </div>
-
-        <div class="picker-days">
-          ${days.map(d => {
-            const selected = d.thisMonth && d.day === this._pickerDay;
-            return html`
-              <button class="picker-day
-                ${d.thisMonth ? '' : 'other-month'}
-                ${d.isToday ? 'today' : ''}
-                ${selected ? 'selected' : ''}"
-                @click=${() => this._pickerSelectDay(d.day, !d.thisMonth)}>
-                ${d.day}
-              </button>`;
-          })}
-        </div>
-
-        <div class="picker-time">
-          <span class="material-symbols-outlined">schedule</span>
-          <input class="time-input" type="text" maxlength="2" placeholder="时"
-            .value=${this._pickerHour}
-            @input=${(e: Event) => {
-              let v = (e.target as HTMLInputElement).value.replace(/\D/g, '');
-              if (parseInt(v) > 23) v = '23';
-              this._pickerHour = v;
-            }} />
-          <span class="time-sep">:</span>
-          <input class="time-input" type="text" maxlength="2" placeholder="分"
-            .value=${this._pickerMinute}
-            @input=${(e: Event) => {
-              let v = (e.target as HTMLInputElement).value.replace(/\D/g, '');
-              if (parseInt(v) > 59) v = '59';
-              this._pickerMinute = v;
-            }} />
+        <div class="picker-body">
+          <div class="picker-calendar">
+            <div class="picker-weekdays">
+              ${['一', '二', '三', '四', '五', '六', '日'].map(d => html`<span>${d}</span>`)}
+            </div>
+            <div class="picker-days">
+              ${days.map(d => {
+                const selected = d.thisMonth && d.day === this._pickerDay;
+                return html`
+                  <button class="picker-day
+                    ${d.thisMonth ? '' : 'other-month'}
+                    ${d.isToday ? 'today' : ''}
+                    ${selected ? 'selected' : ''}"
+                    @click=${() => this._pickerSelectDay(d.day, !d.thisMonth)}>
+                    ${d.day}
+                  </button>`;
+              })}
+            </div>
+          </div>
+          <div class="picker-time-side">
+            <span class="material-symbols-outlined">schedule</span>
+            <input class="time-input" type="text" maxlength="2" placeholder="时"
+              .value=${this._pickerHour}
+              @input=${(e: Event) => {
+                let v = (e.target as HTMLInputElement).value.replace(/\D/g, '');
+                if (parseInt(v) > 23) v = '23';
+                this._pickerHour = v;
+              }} />
+            <span class="time-sep">:</span>
+            <input class="time-input" type="text" maxlength="2" placeholder="分"
+              .value=${this._pickerMinute}
+              @input=${(e: Event) => {
+                let v = (e.target as HTMLInputElement).value.replace(/\D/g, '');
+                if (parseInt(v) > 59) v = '59';
+                this._pickerMinute = v;
+              }} />
+          </div>
         </div>
 
         <div class="picker-actions">
