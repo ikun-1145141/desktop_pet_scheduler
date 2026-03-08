@@ -6,6 +6,8 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { m3Shared } from '../styles/shared';
+import { getTodos, getSchedules } from '../api/client';
+import type { TodoItem, ScheduleEvent } from '../types';
 
 // Lazy-load live2d-viewer to avoid pixi.js blocking the main component
 import('./live2d-viewer').catch(() => {
@@ -99,11 +101,25 @@ export class PetOverlay extends LitElement {
 
   private _bubbleTimer: ReturnType<typeof setTimeout> | null = null;
   private _dragging = false;
+  /** Queued bubble messages waiting to display */
+  private _bubbleQueue: Array<{ text: string; duration: number }> = [];
+  private _hourlyTimer: ReturnType<typeof setTimeout> | null = null;
+  private _reminderTimer: ReturnType<typeof setInterval> | null = null;
+  /** Set of already-reminded item IDs to avoid duplicate alerts */
+  private _remindedIds = new Set<string>();
 
   override connectedCallback() {
     super.connectedCallback();
     // Show a greeting bubble briefly on start (auto-hide after 5s)
     this._showBubble('Hi~ 我是你的桌宠！右键点我打开菜单~', 5000);
+
+    // Start hourly chime
+    this._scheduleHourlyChime();
+
+    // Start todo/schedule reminder polling (every 30s)
+    this._reminderTimer = setInterval(() => this._checkReminders(), 30_000);
+    // Initial check after 6s (let greeting bubble finish first)
+    setTimeout(() => this._checkReminders(), 6000);
 
     // Listen for native menu actions from Electron
     window.electronAPI?.onMenuAction((action, data) => {
@@ -120,10 +136,17 @@ export class PetOverlay extends LitElement {
   override disconnectedCallback() {
     super.disconnectedCallback();
     if (this._bubbleTimer) clearTimeout(this._bubbleTimer);
+    if (this._hourlyTimer) clearTimeout(this._hourlyTimer);
+    if (this._reminderTimer) clearInterval(this._reminderTimer);
   }
 
   /** Show a temporary chat bubble above the pet. durationMs=0 means persistent. */
   private _showBubble(text: string, durationMs = 5000) {
+    // If a bubble is currently showing, queue the new one
+    if (this._bubbleText && text !== this._bubbleText) {
+      this._bubbleQueue.push({ text, duration: durationMs });
+      return;
+    }
     this._bubbleFading = false;
     this._bubbleText = text;
     if (this._bubbleTimer) clearTimeout(this._bubbleTimer);
@@ -133,8 +156,110 @@ export class PetOverlay extends LitElement {
       setTimeout(() => {
         this._bubbleText = '';
         this._bubbleFading = false;
+        // Show next queued bubble
+        this._processQueue();
       }, 300);
     }, durationMs);
+  }
+
+  private _processQueue() {
+    if (this._bubbleQueue.length === 0) return;
+    const next = this._bubbleQueue.shift()!;
+    // Small delay so the fade-out finishes visually
+    setTimeout(() => this._showBubble(next.text, next.duration), 200);
+  }
+
+  /* ---- Hourly chime (整点报时) ---- */
+
+  private _scheduleHourlyChime() {
+    const now = new Date();
+    // Milliseconds until the next full hour
+    const msToNext = (60 - now.getMinutes()) * 60_000
+                   - now.getSeconds() * 1000
+                   - now.getMilliseconds();
+    this._hourlyTimer = setTimeout(() => {
+      this._onHourlyChime();
+      // Then repeat every hour
+      this._hourlyTimer = setInterval(() => this._onHourlyChime(), 3_600_000) as any;
+    }, msToNext);
+  }
+
+  private _onHourlyChime() {
+    const h = new Date().getHours();
+    const period = h < 6 ? '深夜' : h < 9 ? '早上' : h < 12 ? '上午'
+                 : h === 12 ? '中午' : h < 14 ? '下午' : h < 18 ? '下午' : h < 22 ? '晚上' : '深夜';
+    const greetings: Record<string, string> = {
+      '深夜': '夜深了，注意休息哦~',
+      '早上': '早安！新的一天开始啦~',
+      '上午': '上午好，加油工作！',
+      '中午': '中午啦，记得吃饭哦~',
+      '下午': '下午好，继续加油！',
+      '晚上': '晚上好，辛苦啦~',
+    };
+    const greeting = greetings[period] || '';
+    this._showBubble(`🕐 ${period}${h}点了！${greeting}`, 6000);
+  }
+
+  /* ---- Todo & Schedule reminders (待办/日程提醒) ---- */
+
+  private async _checkReminders() {
+    const now = Date.now();
+    try {
+      await Promise.all([
+        this._checkTodoReminders(now),
+        this._checkScheduleReminders(now),
+      ]);
+    } catch {
+      // Silently ignore network errors — will retry next cycle
+    }
+  }
+
+  private async _checkTodoReminders(now: number) {
+    const todos: TodoItem[] = await getTodos();
+    for (const t of todos) {
+      if (t.is_deleted || t.status === 'done' || t.status === 'cancelled') continue;
+      if (!t.due_date) continue;
+      const due = new Date(t.due_date).getTime();
+      if (isNaN(due)) continue;
+      const diff = due - now;
+      const key = `todo-${t.id}`;
+      // Already reminded
+      if (this._remindedIds.has(key)) continue;
+      // Remind if overdue or within 15 minutes
+      if (diff <= 15 * 60_000) {
+        this._remindedIds.add(key);
+        if (diff <= 0) {
+          this._showBubble(`⚠️ 待办已过期：${t.title}`, 8000);
+        } else {
+          const mins = Math.ceil(diff / 60_000);
+          this._showBubble(`📋 待办提醒：「${t.title}」将在${mins}分钟后到期`, 8000);
+        }
+      }
+    }
+  }
+
+  private async _checkScheduleReminders(now: number) {
+    const today = new Date().toISOString().slice(0, 10);
+    const events: ScheduleEvent[] = await getSchedules(today);
+    for (const ev of events) {
+      if (ev.is_deleted) continue;
+      const start = new Date(ev.start_time).getTime();
+      if (isNaN(start)) continue;
+      const remindMs = (ev.remind_before_minutes ?? 15) * 60_000;
+      const diff = start - now;
+      const key = `sched-${ev.id}`;
+      if (this._remindedIds.has(key)) continue;
+      // Remind when within remind_before_minutes window
+      if (diff <= remindMs && diff > -5 * 60_000) {
+        this._remindedIds.add(key);
+        if (diff <= 0) {
+          this._showBubble(`📅 日程开始了：${ev.title}`, 8000);
+        } else {
+          const mins = Math.ceil(diff / 60_000);
+          this._showBubble(`📅 日程提醒：「${ev.title}」将在${mins}分钟后开始`, 8000);
+        }
+      }
+    }
   }
 
   /* ---- Window dragging via IPC ---- */
