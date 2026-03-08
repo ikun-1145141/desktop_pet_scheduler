@@ -102,8 +102,8 @@ export class PetOverlay extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    // Show a greeting bubble on start
-    this._showBubble('Hi~ 我是你的桌宠！右键点我打开菜单~', 0);
+    // Show a greeting bubble briefly on start (auto-hide after 5s)
+    this._showBubble('Hi~ 我是你的桌宠！右键点我打开菜单~', 5000);
 
     // Listen for native menu actions from Electron
     window.electronAPI?.onMenuAction((action, data) => {
