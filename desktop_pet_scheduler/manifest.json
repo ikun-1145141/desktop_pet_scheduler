@@ -1,0 +1,132 @@
+{
+    "name": "desktop_pet_scheduler",
+    "version": "1.0.0",
+    "description": "桌宠日程表 - 集日程管理、待办事项、Live2D 桌宠、智能对话于一体的 Neo-MoFox 插件",
+    "author": "MoFox Studio",
+    "dependencies": {
+        "plugins": [],
+        "components": []
+    },
+    "include": [
+        {
+            "component_type": "config",
+            "component_name": "config",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "service",
+            "component_name": "schedule_service",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "service",
+            "component_name": "todo_service",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "service",
+            "component_name": "live2d_service",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "action",
+            "component_name": "create_schedule",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "action",
+            "component_name": "send_schedule_list",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "action",
+            "component_name": "create_todo",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "action",
+            "component_name": "send_todo_list",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "action",
+            "component_name": "toggle_todo",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "tool",
+            "component_name": "query_schedule",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "tool",
+            "component_name": "query_todo",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "tool",
+            "component_name": "live2d_status",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "command",
+            "component_name": "schedule",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "command",
+            "component_name": "todo",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "command",
+            "component_name": "pet",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "chatter",
+            "component_name": "pet_chatter",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "event_handler",
+            "component_name": "reminder_handler",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "event_handler",
+            "component_name": "startup_handler",
+            "dependencies": [],
+            "enabled": true
+        },
+        {
+            "component_type": "router",
+            "component_name": "pet_api",
+            "dependencies": [],
+            "enabled": true
+        }
+    ],
+    "entry_point": "plugin.py",
+    "min_core_version": "1.0.0",
+    "python_dependencies": [
+        "aiofiles>=24.0.0"
+    ],
+    "dependencies_required": false
+}

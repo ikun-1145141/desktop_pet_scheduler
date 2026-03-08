@@ -1,0 +1,38 @@
+# ── Python ──────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+.venv/
+.env
+.coverage
+.pytest_cache/
+htmlcov/
+
+# ── Node / Electron ────────────────────────
+frontend/node_modules/
+node_modules/
+frontend/dist/
+frontend/dist-electron/
+*.tsbuildinfo
+
+# ── Logs ────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+
+# ── IDE / Editor ────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── OS ──────────────────────────────────────
+desktop.ini
+ehthumbs.db
