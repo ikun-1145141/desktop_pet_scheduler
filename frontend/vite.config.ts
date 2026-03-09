@@ -10,17 +10,34 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** 从 Neo-MoFox 的 core.toml 读取后端 HTTP 地址和端口 */
 function getBackendTarget(): string {
-  const tomlPath = resolve(__dirname, '../Neo-MoFox/config/core.toml');
   let host = '127.0.0.1';
   let port = 8001;
-  try {
-    const content = readFileSync(tomlPath, 'utf-8');
-    const hostMatch = content.match(/^\s*http_router_host\s*=\s*"(.+?)"/m);
-    const portMatch = content.match(/^\s*http_router_port\s*=\s*(\d+)/m);
-    if (hostMatch) host = hostMatch[1];
-    if (portMatch) port = parseInt(portMatch[1], 10);
-  } catch {
-    console.warn(`⚠ 未找到 ${tomlPath}，使用默认后端地址 ${host}:${port}`);
+
+  // 向上逐级搜索 config/core.toml，兼容插件在 Neo-MoFox 内部或独立开发的场景
+  const candidates: string[] = [];
+  let dir = __dirname;
+  for (let i = 0; i < 6; i++) {
+    dir = resolve(dir, '..');
+    candidates.push(resolve(dir, 'config/core.toml'));
+  }
+
+  let found = false;
+  for (const tomlPath of candidates) {
+    try {
+      const content = readFileSync(tomlPath, 'utf-8');
+      const hostMatch = content.match(/^\s*http_router_host\s*=\s*"(.+?)"/m);
+      const portMatch = content.match(/^\s*http_router_port\s*=\s*(\d+)/m);
+      if (hostMatch) host = hostMatch[1];
+      if (portMatch) port = parseInt(portMatch[1], 10);
+      console.log(`✔ 读取后端配置: ${tomlPath} → ${host}:${port}`);
+      found = true;
+      break;
+    } catch {
+      // 继续尝试下一个路径
+    }
+  }
+  if (!found) {
+    console.warn(`⚠ 未找到 core.toml，使用默认后端地址 ${host}:${port}`);
   }
   return `http://${host}:${port}`;
 }
@@ -83,7 +100,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    host: '127.0.0.1',
+    port: 5500,
     proxy: {
       '/api': {
         target: getBackendTarget(),

@@ -63,7 +63,7 @@ function createPetWindow() {
   petWindow.setIgnoreMouseEvents(false);
 
   if (isDev) {
-    petWindow.loadURL('http://localhost:5173/#/pet');
+    petWindow.loadURL('http://localhost:5500/#/pet');
     petWindow.webContents.openDevTools({ mode: 'detach' });
   } else {
     petWindow.loadFile(join(__dirname, '../dist/index.html'), { hash: '/pet' });
@@ -105,7 +105,7 @@ function createPanelWindow() {
   });
 
   if (isDev) {
-    panelWindow.loadURL('http://localhost:5173/#/panel');
+    panelWindow.loadURL('http://localhost:5500/#/panel');
   } else {
     panelWindow.loadFile(join(__dirname, '../dist/index.html'), { hash: '/panel' });
   }
@@ -341,7 +341,7 @@ function setupIPC() {
     });
 
     if (isDev) {
-      menuWindow.loadURL('http://localhost:5173/#/menu');
+      menuWindow.loadURL('http://localhost:5500/#/menu');
     } else {
       menuWindow.loadFile(join(__dirname, '../dist/index.html'), { hash: '/menu' });
     }
